@@ -406,7 +406,9 @@ export default {
                 searchDebounceRate: 60,
                 init: {
                     value: ""
-                }
+                },
+                search_by: (value, search) => (value.indexOf(search) > -1),
+                cleanseText: (value) => (value)
             },
             per_page_options : [5,10,15],
             show_refresh_button: true,
@@ -514,6 +516,8 @@ export default {
                 this.global_search.searchDebounceRate = (has(this.config.global_search, 'searchDebounceRate')) ? this.config.global_search.searchDebounceRate : 60;
                 this.global_search.class = (has(this.config.global_search, 'class')) ? this.config.global_search.class : "";
                 this.global_search.init.value = (has(this.config.global_search, 'init.value')) ? this.config.global_search.init.value: "";
+                this.global_search.search_by = (has(this.config.global_search, 'search_by')) ? this.config.global_search.search_by: this.global_search.search_by;
+                this.global_search.cleanseText = (has(this.config.global_search, 'cleanseText')) ? this.config.global_search.cleanseText: this.global_search.cleanseText;
             }
 
             this.show_refresh_button = (has(this.config, 'show_refresh_button')) ? (this.config.show_refresh_button) : true;
@@ -848,11 +852,22 @@ export default {
         },
 
         filter(resetPage = true, isInit = false) {
+
+            this.query.filters.map(filter => {
+                if (filter.type === "simple") {
+                    filter.config.case_sensitive = (has(filter.config,'case_sensitive')) ? filter.config.case_sensitive : false;
+                    filter.config.filter_by = (has(filter.config,'filter_by')) ? filter.config.filter_by : (value, filter) => (value.indexOf(filter) > -1);
+                    filter.config.cleanseText = (has(filter.config,'cleanseText')) ? filter.config.cleanseText : (value) => (value);
+                    filter.text = this.prepareSearchFilterText(filter.text, filter.config);
+                }
+                return filter;
+            });
+
             let res = filter(this.original_rows, (row) => {
                 let flag = true;
                 this.query.filters.some((filter, key) => {
                     if (filter.type === "simple") {
-                        if (this.simpleFilter(get(row, filter.name), filter.text,filter.config)) {
+                        if (this.simpleFilter(get(row, filter.name), filter.text, filter.config)) {
                             // continue to next filter
                             flag = true;
                         } else {
@@ -861,7 +876,7 @@ export default {
                             return true;
                         }
                     } else if (filter.type === "select") {
-                        if (this.multiSelectFilter(get(row, filter.name), filter.selected_options,filter.config)) {
+                        if (this.multiSelectFilter(get(row, filter.name), filter.selected_options, filter.config)) {
                             flag = true;
                         } else {
                             flag = false;
@@ -907,33 +922,37 @@ export default {
             }
         },
 
+         prepareSearchFilterText(value, config) {
+            if (typeof value !== "string") {
+                value = value.toString();
+            }
+
+            if (!config.case_sensitive) {
+                value = value.toLocaleLowerCase();
+            }
+
+            value = config.cleanseText(value)
+
+            return value;
+        },
+
         globalSearch(temp_filtered_results) {
+            let global_search_text = this.prepareSearchFilterText(this.query.global_search, this.global_search);
+
             let global_search_results = filter(temp_filtered_results, (row) =>{
 
                 let flag = false;
 
                 this.vbt_columns.some((vbt_column, key) => {
                     let value = get(row, vbt_column.name);
-                    let global_search_text = this.query.global_search;
 
                     if (value == null || typeof value === "undefined") {
                         value =  "";
                     }
 
-                    if (typeof value !== "string") {
-                        value = value.toString();
-                    }
+                    value = this.prepareSearchFilterText(value, this.global_search);
 
-                    if (typeof global_search_text !== "string") {
-                        global_search_text = global_search_text.toString();
-                    }
-
-                    if (!this.global_search.case_sensitive) {
-                        value = value.toLowerCase();
-                        global_search_text = global_search_text.toLowerCase();
-                    }
-
-                    if (value.indexOf(global_search_text) > -1) {
+                    if (this.global_search.search_by(value, global_search_text)) {
                         flag = true;
                         return;
                     }
@@ -946,53 +965,33 @@ export default {
             return global_search_results;
         },
 
-        simpleFilter(value, filter_text,config) {
+        simpleFilter(value, filter_text, config) {
 
             if (value == null || typeof value === "undefined") {
                 value =  "";
             }
 
-            if (typeof value !== "string") {
-                value = value.toString();
-            }
+            value = this.prepareSearchFilterText(value, config);
 
-            if (typeof filter_text !== "string") {
-                value = filter_text.toString();
-            }
-
-            let is_case_sensitive = (has(config,'case_sensitive')) ? config.case_sensitive : false;
-
-            if (!is_case_sensitive) {
-                value = value.toLowerCase();
-                filter_text = filter_text.toLowerCase();
-            }
-
-            return value.indexOf(filter_text) > -1;
+            return config.filter_by(value, filter_text);
         },
-        multiSelectFilter(value, selected_options,config) {
+
+        multiSelectFilter(value, selected_options, config) {
 
             if (value == null || typeof value === "undefined") {
                 value =  "";
             }
 
             if (typeof value !== "string") {
-                value = value.toString().toLowerCase();
+                value = value.toString().toLocaleLowerCase();
             } else {
-                value = value.toLowerCase();
+                value = value.toLocaleLowerCase();
             }
 
             selected_options = map(selected_options, (option) => {
-                                    return (typeof option !== "string") ? option.toString().toLowerCase() : option.toLowerCase();
+                                    return (typeof option !== "string") ? option.toString().toLocaleLowerCase() : option.toLocaleLowerCase();
                                 });
             return includes(selected_options, value);
-            // let is_case_sensitive = (has(config,'case_sensitive')) ? config.case_sensitive : false;
-
-            // if (!is_case_sensitive) {
-            //     value = value.toLowerCase();
-            //     filter_text = filter_text.toLowerCase();
-            // }
-
-            // return value.indexOf(filter_text) > -1;
         },
 
         paginateFilter() {
