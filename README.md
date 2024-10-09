@@ -627,6 +627,8 @@ columns: [
 | filter.debounceRate | Defines the wait time for filtering between the key strokes. Value should be in milliseconds. | Number | 60 |
 | filter.showClearButton | Show/Hide clear button in the simple filter. | Boolean | true |
 | filter.init.value | Assign initial value to the the filter before rendering the table. | String | Empty string |
+| filter.filter_by | The method to be used on filtering | Function | `(value, filter) => (value.indexOf(filter) > -1)` |
+| filter.cleanseText | The method to be used on normalizing filter texts | Function | `(value) => (value)` |
 
 ### 8.1.3. Clear button icon slot
 
@@ -794,6 +796,8 @@ You can enable or disable search text input with custom configuration as shown i
 | global_search.searchOnPressEnter | Enable/Disable global search on "enter" key press. | Boolean | false |
 | global_search.searchDebounceRate | Defines the wait time for searching between the key strokes. Value should be in milliseconds. | Number | 60 |
 | global_search.init.value | Assign initial value to the the global search filter before rendering the table. | String | Empty string |
+| global_search.search_by | The method to be used on searching | Function | `(value, search) => (value.indexOf(search) > -1)` |
+| global_search.cleanseText | The method to be used on normalizing search texts | Function | `(value) => (value)` |
 
 ## 9.3. Clear button icon slot
 
