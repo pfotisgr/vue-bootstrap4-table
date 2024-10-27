@@ -639,7 +639,7 @@ export default {
         },
 
         isSortCaseSensitive(column) {
-            return (column.sortCaseSensitive != undefined) ? column.sortCaseSensitive : true;
+            return (column.sortCaseSensitive != undefined) ? column.sortCaseSensitive : false;
         },
 
         updateSortQuery(column) {
@@ -922,7 +922,7 @@ export default {
             }
         },
 
-         prepareSearchFilterText(value, config) {
+        prepareSearchFilterText(value, config) {
             if (typeof value !== "string") {
                 value = value.toString();
             }

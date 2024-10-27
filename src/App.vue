@@ -86,7 +86,7 @@
                 rows: [],
                 customFilters: [],
                 total_rows: 0,
-                showLoader: true,
+                showLoader: false,
                 list: [
                                 {
                                     "name" : "Irwin",

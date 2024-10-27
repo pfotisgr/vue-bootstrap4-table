@@ -505,7 +505,7 @@ columns: [
         sort: true, // "false" by default
         initial_sort: true, // "false" by default
         initial_sort_order: "desc", // "asc" by default
-        sortCaseSensitive: false // "true" by default
+        sortCaseSensitive: true // "false" by default
     }
 ]
 ...
@@ -516,7 +516,7 @@ columns: [
 | sort | Enable or disable sorting in column. Default value is **`false`**.|
 | initial_sort | Sort the column at the first time loading. Default value is **`false`**. This only works if **`sort`** is **`true`**. |
 | initial_sort_order | Sort the column at the first time loading based on given order. Default value is **`asc`**. This only works if **`initial_sort`** is **`true`**. |
-| sortCaseSensitive | Enable or disable case sensitive sorting. Default value is **`true`**. |
+| sortCaseSensitive | Enable or disable case sensitive sorting. Default value is **`false`**. |
 
 ## 7.3. Single column sorting
 By default single column sort mode is enabled.
